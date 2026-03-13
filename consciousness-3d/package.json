@@ -8,8 +8,8 @@
     "dev": "electron . --dev"
   },
   "dependencies": {
+    "cannon-es": "^0.20.0",
     "electron": "^30.0.0",
     "three": "^0.165.0"
-  },
-  "devDependencies": {}
+  }
 }

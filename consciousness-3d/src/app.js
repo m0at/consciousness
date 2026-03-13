@@ -6,6 +6,7 @@ import { BEHAVIORS } from './behavior/behaviors.js';
 import { Locomotion } from './animation/locomotion.js';
 import { StateMachine } from './behavior/stateMachine.js';
 import { EventManager } from './environment/events.js';
+import { PhysicsWorld } from './physics.js';
 import { Store } from './state/store.js';
 import { interpolate } from './state/interpolator.js';
 import { HUD } from './hud/hud.js';
@@ -35,6 +36,32 @@ const locomotion = new Locomotion();
 const stateMachine = new StateMachine(locomotion);
 const eventManager = new EventManager();
 const hud = new HUD();
+
+// ── Physics with breakable objects
+// When something breaks, inject fear/stress into the consciousness
+let breakCooldown = 0;
+const physics = new PhysicsWorld(scene, (event) => {
+    // Something broke! Scare the character.
+    console.log('BREAK:', event.name, 'at', event.x.toFixed(1), event.z.toFixed(1));
+
+    // Inject negative stimulus (fear/threat) — multiple rapid injections for big scare
+    if (breakCooldown <= 0) {
+        for (let i = 0; i < 5; i++) {
+            window.api.sendToPython({ type: 'input', direction: 'negative' });
+        }
+        breakCooldown = 0.5; // don't stack too many break-scares
+    }
+
+    // Flash the room red briefly via a temporary light
+    const flash = new THREE.PointLight(0xff2200, 2, 6);
+    flash.position.set(event.x, 1.5, event.z);
+    scene.add(flash);
+    setTimeout(() => {
+        scene.remove(flash);
+        flash.dispose();
+    }, 300);
+});
+physics.populateRoom();
 
 // Initialize event system
 eventManager.init(scene);
@@ -71,10 +98,8 @@ function updateBehaviorAnimation() {
     const meta = BEHAVIORS[behavior] ?? BEHAVIORS['idle_calm'];
     const isWalking = stateMachine.state === 'WALKING' && locomotion.active;
 
-    // Pick animation: walking behaviors get walk/run, others get idle
     let animName;
     if (isWalking) {
-        // Fast/anxious behaviors use run, others use walk
         animName = (behavior === 'wander_anxious' || behavior === 'pacing_energized') ? 'run' : 'walk';
     } else {
         animName = 'idle';
@@ -85,7 +110,6 @@ function updateBehaviorAnimation() {
         currentAnimName = animName;
     }
 
-    // Adjust animation speed based on behavior
     const ch = getCharacter();
     if (ch && ch.mixer) {
         ch.mixer.timeScale = meta.animSpeed;
@@ -100,7 +124,6 @@ async function init() {
         console.log('Character loaded');
     } catch (err) {
         console.error('Failed to load character:', err);
-        // Continue without character - scene still renders
     }
 
     let lastTime = performance.now();
@@ -110,20 +133,26 @@ async function init() {
         const dt = Math.min((time - lastTime) / 1000, 0.1);
         lastTime = time;
 
+        // Cooldown for break-scare
+        if (breakCooldown > 0) breakCooldown -= dt;
+
         // Update state
         interpolate(store, time);
         stateMachine.update(store, dt);
         store.character.walkPhase = locomotion.walkPhase;
 
-        // Update animation based on state machine + locomotion
+        // Update animation
         updateBehaviorAnimation();
-
-        // Update character animation mixer
         updateCharacter(dt);
 
-        // Sync character position from locomotion
-        setCharacterPosition(store.character.position.x, store.character.position.z);
+        // Sync character position
+        const charX = store.character.position.x;
+        const charZ = store.character.position.z;
+        setCharacterPosition(charX, charZ);
         setCharacterRotation(store.character.facingAngle);
+
+        // Step physics — character collision sphere follows the character
+        physics.update(dt, charX, charZ);
 
         // Update systems
         lights.update(store);
