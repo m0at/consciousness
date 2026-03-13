@@ -85,6 +85,24 @@ pub fn get_traits() -> String {
     serde_json::to_string(&traits).unwrap_or_default()
 }
 
+/// Nudge specific weights by delta values. Input: JSON string of { "aspect_name": delta, ... }
+#[napi]
+pub fn nudge_weights(deltas_json: String) {
+    let mut guard = ENGINE.lock().unwrap();
+    if let Some(engine) = guard.as_mut() {
+        if let Ok(deltas) = serde_json::from_str::<serde_json::Map<String, serde_json::Value>>(&deltas_json) {
+            for (name, val) in &deltas {
+                if let Some(&idx) = engine.config.aspect_index.get(name) {
+                    if let Some(d) = val.as_f64() {
+                        let w = engine.weights_ref()[idx];
+                        engine.set_weight(idx, (w + d).clamp(-1.0, 1.0));
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[napi]
 pub fn randomize_weights(seed: Option<f64>) {
     let mut guard = ENGINE.lock().unwrap();

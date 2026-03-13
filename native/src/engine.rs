@@ -264,6 +264,9 @@ impl ConsciousnessEngine {
     }
 
     pub fn weights_ref(&self) -> &[f64] { &self.weights }
+    pub fn set_weight(&mut self, idx: usize, val: f64) {
+        if idx < self.weights.len() { self.weights[idx] = val; }
+    }
     pub fn dynamics(&self) -> &crate::dynamics::DynamicsEngine { &self.dynamics }
 
     /// Randomize weights AND per-aspect learning rates and momentum,

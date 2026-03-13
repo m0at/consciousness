@@ -11,6 +11,7 @@ import { Store } from './state/store.js';
 import { interpolate } from './state/interpolator.js';
 import { HUD } from './hud/hud.js';
 import { sendInput } from './ipc.js';
+import { InteractionSystem } from './interactions.js';
 
 // ── Renderer
 const canvas = document.getElementById('viewport');
@@ -66,6 +67,9 @@ physics.populateRoom();
 // Initialize event system
 eventManager.init(scene);
 
+// ── Interaction system (ghost tackles + drugs)
+const interactions = new InteractionSystem(scene);
+
 // ── IPC
 window.api.onPythonMessage(msg => store.handleMessage(msg));
 
@@ -76,6 +80,24 @@ window.addEventListener('keydown', e => {
     else if (e.key === 'Tab') { e.preventDefault(); hud.toggle(); }
     else if (e.key === 'r' || e.key === 'R') {
         window.api.sendToPython({ type: 'randomize' });
+    }
+    // WASD — ghost tackle from different directions
+    else if ('wasd'.includes(e.key)) {
+        const result = interactions.ghostTackle(e.key, store);
+        if (result) {
+            window.api.sendToPython({ type: 'nudge', deltas: result.deltas });
+            // Also inject negative for the fear response
+            for (let i = 0; i < 3; i++) window.api.sendToPython({ type: 'input', direction: 'negative' });
+            interactions.showNotification(result.label, '#8844cc');
+        }
+    }
+    // IJKL — drugs/medicine
+    else if ('ijkl'.includes(e.key)) {
+        const result = interactions.administerDrug(e.key, store);
+        if (result) {
+            window.api.sendToPython({ type: 'nudge', deltas: result.deltas });
+            interactions.showNotification(result.label, '#44ff88');
+        }
     }
 });
 window.addEventListener('keyup', e => {
@@ -157,7 +179,14 @@ async function init() {
         // Update systems
         lights.update(store);
         eventManager.update(scene, store, dt);
+        interactions.update(dt);
         hud.update(store);
+
+        // Show interaction notifications in mini panel
+        const notif = interactions.getActiveNotification();
+        if (notif) {
+            store._lastNotification = notif;
+        }
 
         renderer.render(scene, camera);
     }

@@ -78,13 +78,17 @@ export class MiniPanel {
     // Row: hint
     const rowHint = document.createElement('div');
     rowHint.style.color = '#555555';
-    rowHint.textContent = '[Tab] details  [R] randomize';
+    rowHint.textContent = '[Tab] details [R] randomize [WASD] ghost [IJKL] drugs';
+
+    const rowNotif = document.createElement('div');
+    rowNotif.style.cssText = 'font-weight:bold;margin-top:4px;min-height:16px';
 
     el.appendChild(rowState);
     el.appendChild(rowEnergy);
     el.appendChild(rowStress);
     el.appendChild(rowValence);
     el.appendChild(rowBehavior);
+    el.appendChild(rowNotif);
     el.appendChild(rowHint);
 
     this.element = el;
@@ -95,6 +99,7 @@ export class MiniPanel {
     this._rowStress = rowStress;
     this._rowValence = rowValence;
     this._rowBehavior = rowBehavior;
+    this._rowNotif = rowNotif;
     this._prevWeights = null;
   }
 
@@ -140,5 +145,16 @@ export class MiniPanel {
 
     this._rowValence.textContent = 'valence         ' + formatSign(valence);
     this._rowBehavior.textContent = 'behavior: ' + behavior;
+
+    // Show notifications from interactions
+    const notif = store._lastNotification;
+    if (notif && notif.elapsed < notif.duration) {
+      const fade = Math.max(0, 1 - notif.elapsed / notif.duration);
+      this._rowNotif.textContent = notif.label;
+      this._rowNotif.style.color = notif.color || '#ffffff';
+      this._rowNotif.style.opacity = fade;
+    } else {
+      this._rowNotif.textContent = '';
+    }
   }
 }

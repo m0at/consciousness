@@ -52,6 +52,8 @@ function createWindow() {
                 type: 'traits',
                 traits: JSON.parse(engine.getTraits()),
             });
+        } else if (msg.type === 'nudge') {
+            engine.nudgeWeights(JSON.stringify(msg.deltas));
         } else if (msg.type === 'get-traits') {
             mainWindow.webContents.send('python-message', {
                 type: 'traits',
