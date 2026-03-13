@@ -78,7 +78,7 @@ export class MiniPanel {
     // Row: hint
     const rowHint = document.createElement('div');
     rowHint.style.color = '#555555';
-    rowHint.textContent = '[Tab] for details';
+    rowHint.textContent = '[Tab] details  [R] randomize';
 
     el.appendChild(rowState);
     el.appendChild(rowEnergy);

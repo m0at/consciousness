@@ -263,6 +263,9 @@ impl ConsciousnessEngine {
         self.dynamics.reset();
     }
 
+    pub fn weights_ref(&self) -> &[f64] { &self.weights }
+    pub fn dynamics(&self) -> &crate::dynamics::DynamicsEngine { &self.dynamics }
+
     /// Randomize weights AND per-aspect learning rates and momentum,
     /// creating a unique personality with different response dynamics.
     pub fn randomize_weights(&mut self, rng: &mut crate::rng::Rng) {

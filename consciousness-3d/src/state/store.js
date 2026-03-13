@@ -29,6 +29,7 @@ export class Store {
 
     this.init = null;
     this.hudExpanded = false;
+    this.traits = null;  // { aspect: { weight, lr, momentum } }
   }
 
   handleMessage(msg) {
@@ -53,6 +54,10 @@ export class Store {
         }
         break;
       }
+
+      case 'traits':
+        this.traits = msg.traits;
+        break;
 
       default:
         break;

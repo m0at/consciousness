@@ -171,11 +171,8 @@ impl DynamicsEngine {
         &self.conditioning
     }
 
-    pub fn lr_mut(&mut self) -> &mut [f64] {
-        &mut self.lr
-    }
-
-    pub fn mu_mut(&mut self) -> &mut [f64] {
-        &mut self.mu
-    }
+    pub fn lr_mut(&mut self) -> &mut [f64] { &mut self.lr }
+    pub fn mu_mut(&mut self) -> &mut [f64] { &mut self.mu }
+    pub fn lr_mut_ref(&self) -> &[f64] { &self.lr }
+    pub fn mu_mut_ref(&self) -> &[f64] { &self.mu }
 }

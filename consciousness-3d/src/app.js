@@ -47,6 +47,9 @@ window.addEventListener('keydown', e => {
     if (e.key === 'ArrowUp') sendInput('positive');
     else if (e.key === 'ArrowDown') sendInput('negative');
     else if (e.key === 'Tab') { e.preventDefault(); hud.toggle(); }
+    else if (e.key === 'r' || e.key === 'R') {
+        window.api.sendToPython({ type: 'randomize' });
+    }
 });
 window.addEventListener('keyup', e => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') sendInput('none');

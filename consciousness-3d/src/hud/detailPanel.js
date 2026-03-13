@@ -85,6 +85,11 @@ export class DetailPanel {
     scroll.appendChild(hdrPersonality);
     scroll.appendChild(hdrMeta);
 
+    // Personality traits section (starting bias)
+    scroll.appendChild(makeSectionHeader('PERSONALITY DNA  [R] randomize'));
+    const traitsContainer = document.createElement('div');
+    scroll.appendChild(traitsContainer);
+
     // Aspects section
     scroll.appendChild(makeSectionHeader('ASPECT WEIGHTS'));
     const aspectsContainer = document.createElement('div');
@@ -113,6 +118,7 @@ export class DetailPanel {
     el.appendChild(scroll);
     this.element = el;
 
+    this._traitsContainer = traitsContainer;
     this._hdrPersonality = hdrPersonality;
     this._hdrTick = hdrTick;
     this._hdrCircadian = hdrCircadian;
@@ -136,9 +142,57 @@ export class DetailPanel {
     const circadian = interp.circadian != null ? interp.circadian
       : (tick && tick.energy ? tick.energy.circadian : 1.0);
 
-    this._hdrPersonality.textContent = 'personality: ' + personality;
+    this._hdrPersonality.textContent = personality ? ('personality: ' + personality) : 'randomized personality';
     this._hdrTick.textContent = 'tick: ' + tickNum;
     this._hdrCircadian.textContent = 'circadian: ' + circadian.toFixed(2);
+
+    // Personality DNA / traits
+    const traits = store.traits;
+    if (traits && this._traitsContainer) {
+      this._traitsContainer.textContent = '';
+      // Header row
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;gap:4px;margin:2px 0;color:#555;font-size:10px';
+      hdr.innerHTML = '<span style="flex:0 0 18ch">aspect</span><span style="flex:0 0 7ch;text-align:right">bias</span><span style="flex:0 0 6ch;text-align:right">speed</span><span style="flex:0 0 6ch;text-align:right">inertia</span>';
+      this._traitsContainer.appendChild(hdr);
+
+      const sorted = Object.entries(traits).sort((a, b) => Math.abs(b[1].weight) - Math.abs(a[1].weight));
+      for (const [aspect, t] of sorted) {
+        const cat = categoryMap[aspect] || 'cognitive';
+        const color = catColors[cat] || '#aaa';
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:4px;margin:1px 0;font-size:11px';
+
+        const dot = document.createElement('span');
+        dot.textContent = '●';
+        dot.style.cssText = 'color:' + color + ';font-size:8px;flex-shrink:0';
+
+        const name = document.createElement('span');
+        name.style.cssText = 'flex:0 0 17ch;overflow:hidden;text-overflow:ellipsis;color:#777';
+        name.textContent = aspect;
+
+        const bias = document.createElement('span');
+        bias.style.cssText = 'flex:0 0 7ch;text-align:right;color:' + (t.weight >= 0 ? '#7cb87c' : '#c87c7c');
+        bias.textContent = (t.weight >= 0 ? '+' : '') + t.weight.toFixed(2);
+
+        const lr = document.createElement('span');
+        // Color speed: fast=bright, slow=dim
+        const lrBright = Math.round(80 + t.lr * 3000);
+        lr.style.cssText = 'flex:0 0 6ch;text-align:right;color:rgb(' + lrBright + ',' + lrBright + ',' + Math.round(lrBright * 0.7) + ')';
+        lr.textContent = (t.lr * 100).toFixed(1);
+
+        const mu = document.createElement('span');
+        mu.style.cssText = 'flex:0 0 6ch;text-align:right;color:#999';
+        mu.textContent = t.momentum.toFixed(2);
+
+        row.appendChild(dot);
+        row.appendChild(name);
+        row.appendChild(bias);
+        row.appendChild(lr);
+        row.appendChild(mu);
+        this._traitsContainer.appendChild(row);
+      }
+    }
 
     // Build category-to-color and aspect-to-category maps from init
     const categoryMap = {}; // aspect -> category name

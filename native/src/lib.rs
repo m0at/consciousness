@@ -68,6 +68,24 @@ pub fn set_personality(name: Option<String>) {
 }
 
 #[napi]
+pub fn get_traits() -> String {
+    let guard = ENGINE.lock().unwrap();
+    let engine = guard.as_ref().expect("Engine not created");
+    let mut traits = serde_json::Map::new();
+    for (i, name) in engine.config.aspects.iter().enumerate() {
+        let lr = engine.dynamics().lr_mut_ref().get(i).copied().unwrap_or(0.02);
+        let mu = engine.dynamics().mu_mut_ref().get(i).copied().unwrap_or(0.8);
+        let w = engine.weights_ref().get(i).copied().unwrap_or(0.0);
+        traits.insert(name.clone(), serde_json::json!({
+            "weight": (w * 1e4).round() / 1e4,
+            "lr": (lr * 1e4).round() / 1e4,
+            "momentum": (mu * 1e4).round() / 1e4,
+        }));
+    }
+    serde_json::to_string(&traits).unwrap_or_default()
+}
+
+#[napi]
 pub fn randomize_weights(seed: Option<f64>) {
     let mut guard = ENGINE.lock().unwrap();
     if let Some(engine) = guard.as_mut() {

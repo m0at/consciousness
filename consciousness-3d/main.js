@@ -26,6 +26,10 @@ function createWindow() {
 
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('python-message', init);
+        mainWindow.webContents.send('python-message', {
+            type: 'traits',
+            traits: JSON.parse(engine.getTraits()),
+        });
 
         // Tick at 60Hz
         tickInterval = setInterval(() => {
@@ -43,6 +47,16 @@ function createWindow() {
             engine.setPersonality(msg.personality || null);
         } else if (msg.type === 'randomize') {
             engine.randomizeWeights(null);
+            // Send updated traits to renderer
+            mainWindow.webContents.send('python-message', {
+                type: 'traits',
+                traits: JSON.parse(engine.getTraits()),
+            });
+        } else if (msg.type === 'get-traits') {
+            mainWindow.webContents.send('python-message', {
+                type: 'traits',
+                traits: JSON.parse(engine.getTraits()),
+            });
         }
     });
 
