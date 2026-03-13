@@ -1,0 +1,16 @@
+export const BEHAVIORS = {
+  idle_calm:           { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 0.8 },
+  idle_restless:       { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 1.2 },
+  pacing_ruminate:     { type: 'walking',  requiresChair: false, isWalking: true,  animSpeed: 0.7 },
+  pacing_energized:    { type: 'walking',  requiresChair: false, isWalking: true,  animSpeed: 1.3 },
+  sitting_contemplate: { type: 'seated',   requiresChair: true,  isWalking: false, animSpeed: 0.8 },
+  sitting_dejected:    { type: 'seated',   requiresChair: true,  isWalking: false, animSpeed: 0.5 },
+  standing_confident:  { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 1.0 },
+  standing_vigilant:   { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 1.0 },
+  gesture_social:      { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 1.1 },
+  gesture_eureka:      { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 1.0 },
+  wander_curious:      { type: 'walking',  requiresChair: false, isWalking: true,  animSpeed: 0.9 },
+  wander_anxious:      { type: 'walking',  requiresChair: false, isWalking: true,  animSpeed: 1.4 },
+  retreat_corner:      { type: 'walking',  requiresChair: false, isWalking: true,  animSpeed: 0.6 },
+  startle:             { type: 'standing', requiresChair: false, isWalking: false, animSpeed: 1.5 },
+};

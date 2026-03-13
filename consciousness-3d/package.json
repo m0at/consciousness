@@ -1,0 +1,15 @@
+{
+  "name": "consciousness-3d",
+  "version": "1.0.0",
+  "description": "Consciousness simulation 3D visualizer",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "dependencies": {
+    "electron": "^30.0.0",
+    "three": "^0.165.0"
+  },
+  "devDependencies": {}
+}
